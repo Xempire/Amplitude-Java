@@ -35,9 +35,13 @@ public class Amplitude {
     }
 
     public void logEvent(Event event) {
+        asyncHttpCall(event);
+    }
+
+    private void asyncHttpCall(Payload payload) {
         try {
             Future<Void> futureResult = CompletableFuture.supplyAsync(() -> {
-                syncHttpCall(event);
+                syncHttpCall(payload);
                 return null;
             });
             futureResult.get(Constants.NETWORK_TIMEOUT_MILLIS, TimeUnit.MILLISECONDS);
@@ -58,11 +62,11 @@ public class Amplitude {
      * Use HTTPUrlConnection object to make async HTTP request,
      * using data from event like device, class name, event props, etc.
      */
-    private void syncHttpCall(Event event) {
+    private void syncHttpCall(Payload payload) {
         HttpsURLConnection connection;
         InputStream inputStream = null;
         try {
-            connection = (HttpsURLConnection) new URL(Constants.API_URL).openConnection();
+            connection = (HttpsURLConnection) new URL(payload.getApiUrl()).openConnection();
             connection.setRequestMethod("POST");
             connection.setRequestProperty("Content-Type", "application/json");
             connection.setRequestProperty("Accept", "application/json");
@@ -70,7 +74,7 @@ public class Amplitude {
 
             JSONObject bodyJson = new JSONObject();
             bodyJson.put("api_key", apiKey);
-            bodyJson.put("events", event.toJsonObject());
+            bodyJson.put(payload.getJsonPropertyKey(), payload.toJsonObject());
 
             String bodyString = bodyJson.toString();
             OutputStream os = connection.getOutputStream();
