@@ -38,6 +38,10 @@ public class Amplitude {
         asyncHttpCall(event);
     }
 
+    public void identify(Identification identification) {
+        asyncHttpCall(identification);
+    }
+
     private void asyncHttpCall(Payload payload) {
         try {
             Future<Void> futureResult = CompletableFuture.supplyAsync(() -> {
